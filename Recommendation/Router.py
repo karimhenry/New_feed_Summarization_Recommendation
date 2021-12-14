@@ -5,7 +5,7 @@ from enum import Enum
 from fastapi import FastAPI, HTTPException, Body, Request, File, UploadFile, Form, Depends, BackgroundTasks
 
 from pydantic import BaseModel
-from Recommendation.recommender import Trainer
+from Recommendation.surprise_recommender import SurpriseTrainer
 from pydantic import parse_obj_as
 from collections import defaultdict
 from fastapi.templating import Jinja2Templates
@@ -13,7 +13,7 @@ from fastapi.responses import HTMLResponse
 
 
 app = FastAPI()
-trainer = Trainer()
+trainer = SurpriseTrainer(1)
 temps = Jinja2Templates(directory='templates')
 
 # @app.get("/home/{user_name}", response_class=HTMLResponse)
