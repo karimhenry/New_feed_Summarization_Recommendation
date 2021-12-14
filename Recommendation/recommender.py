@@ -3,7 +3,10 @@ import pandas as pd
 from surprise import Dataset
 from surprise import SVD, Reader
 from surprise.model_selection import KFold
+from fastapi.templating import Jinja2Templates
+from surprise.model_selection import train_test_split
 
+import json
 import os
 import json
 from datetime import datetime
@@ -18,22 +21,38 @@ from Recommendation.MF_R import matrix_factorization
 
 
 class Trainer():
-    def __init__(self, data) -> None:
+    def __init__(self, mode = 0) -> None:
 
-        self.processed_data_path = os.path.join(os.path.dirname(
-            os.path.dirname(os.path.abspath(__file__))), 'Data','processed',data)
+        # 0 for articles dataset and 1 for subcategories dataset
+        valid = {0, 1}
+        if mode not in valid:
+            raise ValueError("results: Mode must be one of %r." % valid)
+        self.mode = mode
 
-        # self.data = pd.read_csv(self.processed_data_path)
+        if mode==0:
+            data='df_unpivoted.csv'
+
+        else:
+            data='SubCat_DF.csv'
+
+        self.__data_path = os.path.join(os.path.dirname(
+            os.path.dirname(os.path.abspath(__file__))), 'Data')
+
+        self.processed_data_path = os.path.join(self.__data_path,'processed',data)
+
+        self.data = pd.read_csv(self.processed_data_path)
 
         self.__storage_path = os.path.join(os.path.dirname(
             os.path.dirname(os.path.abspath(__file__))), 'storage')
         if not os.path.exists(self.__storage_path):
             os.mkdir(self.__storage_path)
+
+
         self.__status_path = os.path.join(
             self.__storage_path, 'model_status.json')
         self.__model_path = os.path.join(
             self.__storage_path, 'model_pickle.joblib')
-
+        #
         if os.path.exists(self.__status_path):
             with open(self.__status_path) as file:
                 self.model_status = json.load(file)
@@ -41,14 +60,18 @@ class Trainer():
             self.model_status = {"status": "No Model found",
                                  "timestamp": datetime.now().isoformat(),
                                  "precision":0}
+        #
 
-        if os.path.exists(self.__model_path):
-            self.model = joblib.load(self.__model_path)
-        else:
-            self.model = None
 
-        self._running_threads = []
-        self._pipeline = None
+        self.__predictions_path = os.path.join(self.__data_path,'prediction','predictions.json')
+        if os.path.exists(self.__predictions_path):
+            with open(self.__predictions_path) as file:
+                self.preds = json.load(file)
+        else : self.preds=None
+
+
+        # self._running_threads = []
+        # self._pipeline = None
 
     def get_status(self) -> Dict:
         return self.model_status
@@ -70,33 +93,38 @@ class Trainer():
     #             self._running_threads.pop(i)
     #             break
 
-    def train(self, library) -> None:
+    def train(self, library=0) -> None:
         # if len(self._running_threads):
         #     raise Exception("A training process is already running.")
 
-        valid = {'surprise', 'MF'}
+        # 0:'surprise, 1:'MF'
+        valid = {0,1}
         if library not in valid:
             raise ValueError("results: Library must be one of %r." % valid)
         self.library = library
 
-        if self.library == 'surprise':
+        if self.library == 0:
             self.trainset, self.testset = surprise_L.dataloader(self.data)
 
             algo = SVD(n_factors=100, n_epochs=20, biased=True,init_mean=0, init_std_dev=0.1,
                        lr_all=0.005, reg_all=0.02, lr_bu=None,lr_bi=None, lr_pu=None,lr_qi=None,
-                       reg_bu=None,reg_bi=None, reg_pu=None,reg_qi=None, random_state=42,verbose=False, )
+                       reg_bu=None,reg_bi=None, reg_pu=None,reg_qi=None, random_state=42,verbose=True, )
 
             self._model = algo.fit(self.trainset)
+
             self.predictions1 = algo.test(self.testset)
-            precisions1, recall1 = surprise_L.precision_recall_at_k(self.predictions1, k=10, threshold=0.21)
+            # if os.path.exists(self.__model_path):
+            #     self.model = joblib.load(self.__model_path)
+            self.predictions1 = self.model.test(self.testset)
+            precisions1, recall1 = surprise_L.precision_recall_at_k(self.predictions1, k=20, threshold=0.15)
             self.pre = (sum(prec for prec in precisions1.values()) / len(precisions1))
             # print(f'Training finished with precision {pre}')
-            joblib.dump(self._model, self.__model_path, compress=9)
+            # joblib.dump(self._model, self.__model_path, compress=9)
             self._update_status("Model Ready",  self.pre)
 
             # self.model = self._pipeline
 
-        elif self.library == 'MF':
+        elif self.library == 1:
             mf = matrix_factorization('article')
         # update model status
         # self.model = None
@@ -107,13 +135,31 @@ class Trainer():
         # self._running_threads.append(t)
         # t.start()
 
-    def predict(self) -> List[Dict]:
-        response = []
-        if self.model:
-            self.trainset, self.testset = surprise_L.dataloader(self.data)
-            self.predictions1 = self.model.test(self.testset)
+    def _predict(self) -> List[Dict]:
 
-            return (surprise_L.get_top_n(self.predictions1, n=10)['U100'])
+        self.__prediction_path = os.path.join(self.__data_path,'prediction')
+        if not os.path.exists(self.__prediction_path):
+            os.mkdir(self.__prediction_path )
+
+        if os.path.exists(self.__model_path):
+            self.model = joblib.load(self.__model_path)
+        else:
+            self.model = None
+
+        if self.model:
+            reader = Reader(rating_scale=(0, 1))
+            dataDF = Dataset.load_from_df(self.data[['user_id', 'item_id', 'rating']].head(1000), reader)
+            trainset = dataDF.build_full_trainset()
+
+            print('shuffle in memo')
+            testset = trainset.build_anti_testset()
+            print('end of shuffle in memo')
+
+            self.predictions1 = self.model.test(testset)
+            top_preds = ((surprise_L.get_top_n(self.predictions1, n=40)))
+            with open(os.path.join(self.__prediction_path,'predictions.json'), 'w') as f:
+                json.dump(top_preds, f)
+            return top_preds
             # probs = self.model.predict_proba(texts)
         #     for i, row in enumerate(probs):
         #         row_pred = {}
@@ -130,15 +176,21 @@ class Trainer():
         self.model_status['timestamp'] = datetime.now().isoformat()
         self.model_status['precision'] = evaluation
 
-        # self.model_status['classes'] = classes
-        # self.model_status['precision'] = evaluation
-
         with open(self.__status_path, 'w+') as file:
             json.dump(self.model_status, file, indent=2)
 
-# a = Trainer('df_unpivoted.csv')
+
+    def get_top_n(self,user_id,n):
+
+        if user_id in self.preds.keys():
+            return {f'Top {n} articles for you ':self.preds[user_id][:n]}
+        else:return {f'user not found'}
+
+a = Trainer()
 # print(a.model_status)
-# a.train('surprise')
+# a.train()
 # print(a.pre)
-# a.predict()
-# a.get_status()
+# print(a._predict())
+# print(a.get_status())
+
+# print(a.get_top_10('U100',5))

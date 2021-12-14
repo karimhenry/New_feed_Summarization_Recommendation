@@ -22,13 +22,13 @@ class DataPreprocess():
 
     def _merge_dicts(self,x):
         """
-        Merging user multiple row into a single row
+        Merging auth multiple row into a single row
 
         Args:
-        x:  a list of dictionaries to be merged for each user
+        x:  a list of dictionaries to be merged for each auth
 
         Returns:
-        dictionary: article as key and user impression as value
+        dictionary: article as key and auth impression as value
         """
         return {k: v for d in x.dropna() for k, v in d.items()}
 
@@ -72,7 +72,7 @@ class DataPreprocess():
         items = list(set(chain.from_iterable(sub.keys() for sub in Imp_list)))
         # print(f'We are dealing with {len(items)} unique article ')
 
-        # Merging duplicated user rows into single record
+        # Merging duplicated auth rows into single record
         beh_merged = behaviors[['user_id', 'history', 'impressions']]
         beh_merged = beh_merged.groupby(['user_id'], as_index=False).impressions.agg(self._merge_dicts)
 
@@ -117,14 +117,14 @@ class DataPreprocess():
         df_subcat = df_subcat[['user_id', 'SubCategory', 'rating']]
         df_subcat.rename(columns={'SubCategory': 'item_id'}, inplace=True)
 
-        # Get Sum of clicked items by each user
+        # Get Sum of clicked items by each auth
         df_totals = df_subcat.groupby(['user_id'], as_index=False)['rating'].sum()
         df_totals.rename(columns={'rating': 'total_clicked'}, inplace=True)
 
-        # Get Sum of clicked items by each user per subcategory
+        # Get Sum of clicked items by each auth per subcategory
         df_subcat_totals = df_subcat.groupby(['user_id', 'item_id'], as_index=False)['rating'].sum()
 
-        # Merge the Sum clicked by sub cateogry with Total number clicked by user
+        # Merge the Sum clicked by sub cateogry with Total number clicked by auth
         SubCat_Df = df_subcat_totals.merge(df_totals, how='left', left_on='user_id', right_on='user_id')
 
         # Normlizing the ratings by dividing rating per total clicked articles

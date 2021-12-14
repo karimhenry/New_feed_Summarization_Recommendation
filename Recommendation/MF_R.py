@@ -63,7 +63,7 @@ class matrix_factorization():
         # Initial training matrix
         train_initial = X.query("user_id not in @users_update").sample(frac=1,replace=False)
 
-        # Train and test sets for updating model. For each new user split their ratings into two sets, one for update and one for test
+        # Train and test sets for updating model. For each new auth split their ratings into two sets, one for update and one for test
         data_update = X.query("user_id in @users_update")
         train_update, test_update = train_test_split(data_update, test_size=0.5)
 
