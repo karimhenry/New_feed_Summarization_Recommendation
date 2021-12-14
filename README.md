@@ -23,6 +23,13 @@ Project Organization
     ├── README.md          <- The top-level README for developers using this project.
     ├── Data
     │   ├── prediction     <- Prediction for all users
+    │   │  └── surprise
+    │   │  │    ├── predictions_articles.json
+    │   │  │    └── predictions_subcategories.json
+    │   │  └── matrix_fact
+    │   │       ├── model_pickle_aricle.joblib
+    │   │       └── model_status_article.json
+    │   │
     │   ├── processed      <- The final, canonical data sets for modeling.
     │   └── raw            <- The original, immutable data dump.
     │
@@ -32,14 +39,22 @@ Project Organization
     ├── templates          <- contains .html files
     ├── Recommendation     <- Makes src a Python module
     │   ├── __init__.py
-    │   ├── MF_R.py
-    │   ├── Surprise_R.py
-    │   ├── recommender.py
+    │   ├── matrix_factorization_recommender.py
+    │   ├── surprise_recommender.py
     │   └── Router.py
     │
+    ├── requirements.txt
+    │
     ├── storage     <- contains serialized model 
-        ├── model_pickle.joblib
-        └── model_status.json
+        └── surprise
+        │   ├── model_pickle_sub.joblib
+        │   ├── model_pickle_aricles.joblib
+        │   ├── model_status_sub.json
+        │   └── model_status_articles.json
+        │
+        └── matrix_fact
+            ├── model_pickle_aricle.joblib
+            └── model_status_article.json
 
 
 
