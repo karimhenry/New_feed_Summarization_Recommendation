@@ -10,11 +10,13 @@ from pydantic import parse_obj_as
 from collections import defaultdict
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
 
 
 app = FastAPI()
-trainer = SurpriseTrainer(1)
+trainer = SurpriseTrainer(0)
 temps = Jinja2Templates(directory='templates')
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # @app.get("/home/{user_name}", response_class=HTMLResponse)
 # def write_home(request: Request, user_name: str):
@@ -47,7 +49,7 @@ class User(BaseModel):
 
 @app.get("/",response_class=HTMLResponse)
 def home(request: Request):
-    return temps.TemplateResponse("home.html",{"request": request})
+    return temps.TemplateResponse("index.html",{"request": request})
     # return({"message": "System is up"})
 
 @app.get("/status", summary="Get current status of the system")
