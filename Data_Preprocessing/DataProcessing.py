@@ -1,26 +1,18 @@
 import os
-import json
-from datetime import datetime
 import pandas as pd
-from collections import defaultdict
 from itertools import chain
-import numpy as np
-from threading import Thread, current_thread, get_ident
-from typing import Dict, List, Union
-import joblib
 
-class DataPreprocess():
 
+class DataPreprocess:
     def __init__(self):
         self.__data = os.path.join(os.path.dirname(
             os.path.dirname(os.path.abspath(__file__))), 'Data')
-        self.__processeddata_path = os.path.join(self.__data,'processed')
+        self.__processeddata_path = os.path.join(self.__data, 'processed')
         self.__rawdata_path = os.path.join(self.__data, 'raw')
         if not os.path.exists(self.__processeddata_path):
             os.mkdir(self.__processeddata_path)
 
-
-    def _merge_dicts(self,x):
+    def _merge_dicts(self, x):
         """
         Merging auth multiple row into a single row
 
@@ -76,7 +68,7 @@ class DataPreprocess():
         beh_merged = behaviors[['user_id', 'history', 'impressions']]
         beh_merged = beh_merged.groupby(['user_id'], as_index=False).impressions.agg(self._merge_dicts)
 
-        # Unpivote Behaviours Dataset
+        # Unpivot Behaviours Dataset
         df_unpivoted = pd.DataFrame(
             [[i, k, v] for i, d in beh_merged[['user_id', 'impressions']].values for k, v in d.items()],
             columns=['user_id', 'item_id', 'rating'])
@@ -93,15 +85,15 @@ class DataPreprocess():
         Args:
         DATA_DIR:  Directory for where raw data exists
         """
-        self.df_unpivoted_path = os.path.join(self.__processeddata_path,'df_unpivoted.csv')
+        self.df_unpivoted_path = os.path.join(self.__processeddata_path, 'df_unpivoted.csv')
         if not os.path.exists(self.df_unpivoted_path):
             self.Preprocessing_Behaviors()
 
         df_unpivoted = pd.read_csv(self.df_unpivoted_path)
+
         # Loading News Dataset
         news = pd.read_csv(self.__rawdata_path + '/news.tsv', sep='\t', header=None,
-                           names=['News ID', 'Category', 'SubCategory', 'Title', 'Abstract', 'URL', 'Title Entities',
-                                  'Abstract Entities'])
+                           names=['News ID', 'Category', 'SubCategory', 'Title', 'Abstract', 'URL', 'Title Entities', 'Abstract Entities'])
 
         # Subset News Dataset
         news_df = news[['News ID', 'SubCategory']]
@@ -124,23 +116,20 @@ class DataPreprocess():
         # Get Sum of clicked items by each auth per subcategory
         df_subcat_totals = df_subcat.groupby(['user_id', 'item_id'], as_index=False)['rating'].sum()
 
-        # Merge the Sum clicked by sub cateogry with Total number clicked by auth
+        # Merge the Sum clicked by sub category with Total number clicked by auth
         SubCat_Df = df_subcat_totals.merge(df_totals, how='left', left_on='user_id', right_on='user_id')
 
-        # Normlizing the ratings by dividing rating per total clicked articles
+        # Normalizing the ratings by dividing rating per total clicked articles
         # SubCat_Df['rating'].values[SubCat_Df['rating'] > 0] = 1
         SubCat_Df['rating'] = (SubCat_Df['rating'] / SubCat_Df['total_clicked'])
 
         # Subset the Subcat Dataframe
         SubCat_Df = SubCat_Df[['user_id', 'item_id', 'rating']]
 
-        SubCat_Df.to_csv(os.path.join(os.path.dirname
-                                         (os.path.dirname(os.path.abspath(__file__)))
-                                         , 'Data', 'processed', 'SubCat_Df.csv'))
+        SubCat_Df.to_csv(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'Data', 'processed', 'SubCat_Df.csv'))
 
 
-
-#==== testing====
-a = DataPreprocess()
+# ==== testing====
+# a = DataPreprocess()
 # a.Preprocessing_Behaviors('../Data/raw/')
 # a.Preprocessing_News()
