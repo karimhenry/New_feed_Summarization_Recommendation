@@ -1,4 +1,14 @@
 # Dataset
+BBC News Summary
+https://www.kaggle.com/pariza/bbc-news-summary
+
+2225 documents from the BBC news website corresponding to stories in five topical areas from 2004-2005
+News Distribution :-
+* Business             510
+* Entertainment         386
+* Politics             417
+* Sport                 511
+* Tech         
 https://www.kaggle.com/pariza/bbc-news-summary
 
 This dataset for extractive text summarization has four hundred and seventeen political news articles of BBC from 2004 to 2005 in the News Articles folder. For each articles, five summaries are provided in the Summaries folder. The first clause of the text of articles is the respective title.
