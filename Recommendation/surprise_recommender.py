@@ -91,8 +91,7 @@ class SurpriseTrainer:
     def __init__(self, mode=0) -> None:
         self.library = 'surprise'
 
-        self.__data_path = os.path.join(os.path.dirname(
-            os.path.dirname(os.path.abspath(__file__))), 'Data')
+        self.__data_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'Data')
 
         # 0 for articles dataset and 1 for subcategories dataset
         valid = {0, 1}
@@ -248,7 +247,6 @@ class SurpriseTrainer:
             json.dump(self.model_status, file, indent=2)
 
     def get_top_n(self, user_id, n):
-
         if user_id in self.preds.keys():
             return {f'Articles': self.preds[user_id][:n]}
         else:
