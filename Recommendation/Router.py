@@ -1,17 +1,16 @@
 from __future__ import annotations
 from typing import Dict, List
-from fastapi import FastAPI, HTTPException, Request
 from pydantic import BaseModel
-from Recommendation.surprise_recommender import SurpriseTrainer
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
-
+from Recommendation.surprise_recommender import SurpriseTrainer
 import os
 import pandas as pd
 
-app = FastAPI()
 trainer = SurpriseTrainer(0)
+app = FastAPI()
 temps = Jinja2Templates(directory='templates')
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
@@ -107,6 +106,35 @@ def recommend(request: Request, user_id, n=5):
         raise HTTPException(status_code=503, detail=str(e))
 
 
+@app.get("/category", response_class=HTMLResponse)
+def category(request: Request, category, n=5):
+    try:
+        titles = []
+        summaries = []
+        urls = []
+        predictions = []
+
+        # Loading News Dataset
+        path = os.path.join(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'Data'),
+                            'processed')
+        news_df = pd.read_csv(path + '/Category_df.csv').fillna("")
+        news_df = news_df[news_df['Category'] == category.lower()]
+        n = min(n, news_df.shape[0])
+
+        for i in range(n):
+            predictions.append(str(news_df.iloc[i]['News ID']))
+            titles.append(str(news_df.iloc[i]['Title']))
+            summaries.append(str(news_df.iloc[i]['Abstract']))
+            urls.append(str(news_df.iloc[i]['URL']))
+
+        return temps.TemplateResponse("index.html",
+                                      {"request": request, "user_id": category, "predictions": predictions,
+                                       "titles": titles, "summaries": summaries, "urls": urls})
+
+    except Exception as e:
+        raise HTTPException(status_code=503, detail=str(e))
+
+
 @app.get("/status", summary="Get current status of the system")
 def get_status():
     status = trainer.get_status()
@@ -121,4 +149,3 @@ def predict(user_id, n):
 
     except Exception as e:
         raise HTTPException(status_code=503, detail=str(e))
-

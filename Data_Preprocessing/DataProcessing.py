@@ -128,8 +128,40 @@ class DataPreprocess:
 
         SubCat_Df.to_csv(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'Data', 'processed', 'SubCat_Df.csv'))
 
+    def Preprocessing_Categories(self):
+        """
+        This Method is concerned with behavior.tsv applying some preprocessing and putting it
+        in .csv format with following columns 'user_id', 'item_id'& 'rating'
 
-# ==== testing====
+        Args:
+        DATA_DIR:  Directory for where raw data exists
+        """
+
+        self.df_unpivoted_path = os.path.join(self.__processeddata_path, 'df_unpivoted.csv')
+        if not os.path.exists(self.df_unpivoted_path):
+            self.Preprocessing_Behaviors()
+
+        df_unpivoted = pd.read_csv(self.df_unpivoted_path)
+        df_unpivoted = df_unpivoted[['item_id', 'rating']]
+        df_unpivoted = df_unpivoted.groupby(['item_id']).agg('sum')
+        df_unpivoted = df_unpivoted[df_unpivoted['rating'] > 0]
+
+        # Loading News Dataset
+        news = pd.read_csv(self.__rawdata_path + '/news.tsv', sep='\t', header=None, names=['News ID', 'Category', 'SubCategory', 'Title', 'Abstract', 'URL', 'Title Entities', 'Abstract Entities'])
+
+        # Subset News Dataset
+        news_df = news[['News ID', 'Category', 'Title', 'Abstract', 'URL']]
+
+        # Merge the behaviours dataframe with news dataframe
+        df_subcat = df_unpivoted.merge(news_df, how='left', left_on='item_id', right_on='News ID')
+        df_subcat = df_subcat.sort_values(by=['Category', 'rating'], ascending=[True, False])
+        df_subcat = df_subcat.reindex(columns=['News ID',  'rating', 'Category', 'Title', 'Abstract', 'URL'])
+
+        df_subcat.to_csv(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'Data', 'processed', 'Category_df.csv'), index=False)
+
+
+# ====Code Running====
 # a = DataPreprocess()
-# a.Preprocessing_Behaviors('../Data/raw/')
+# a.Preprocessing_Behaviors()
 # a.Preprocessing_News()
+# a.Preprocessing_Categories()

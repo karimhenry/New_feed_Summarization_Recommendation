@@ -115,16 +115,16 @@
                             <div class="row">
                                 <div class="col-sm-6">
                                     <ul class="list-unstyled mb-0">
-                                        <li><a href="">News</a></li>
-                                        <li><a href="">Sports</a></li>
-                                        <li><a href="">Health</a></li>
+                                        <li><a href="category?category=News">News</a></li>
+                                        <li><a href="category?category=Sports">Sports</a></li>
+                                        <li><a href="category?category=Entertainment">Entertainment</a></li>
                                     </ul>
                                 </div>
                                 <div class="col-sm-6">
                                     <ul class="list-unstyled mb-0">
-                                        <li><a href="">Lifestyle</a></li>
-                                        <li><a href="">Machine Learning</a></li>
-                                        <li><a href="">Movies</a></li>
+                                        <li><a href="category?category=Video">Video</a></li>
+                                        <li><a href="category?category=Weather">Weather</a></li>
+                                        <li><a href="category?category=Autos">Autos</a></li>
                                     </ul>
                                 </div>
                             </div>
@@ -147,6 +147,14 @@
                 {
                     const uid = document.getElementById("uid").value;
                     const url = `recommend?user_id=${uid}`;
+                    location.assign(url);
+                }
+        </script>
+        <script>
+            async function getCategory(Category)
+                {
+                    const cat = Category
+                    const url = `category?category=${cat}`;
                     location.assign(url);
                 }
         </script>
