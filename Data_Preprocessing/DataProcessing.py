@@ -1,12 +1,12 @@
 import os
-import random
-
 import pandas as pd
-from itertools import chain
+# import random
+# from itertools import chain
 
 
 class DataPreprocess:
     def __init__(self):
+        self.df_unpivoted_path = None
         self.__data = os.path.join(os.path.dirname(
             os.path.dirname(os.path.abspath(__file__))), 'Data')
         self.__processeddata_path = os.path.join(self.__data, 'processed')
@@ -14,7 +14,8 @@ class DataPreprocess:
         if not os.path.exists(self.__processeddata_path):
             os.mkdir(self.__processeddata_path)
 
-    def _merge_dicts(self, x):
+    @staticmethod
+    def _merge_dicts(x):
         """
         Merging auth multiple row into a single row
 
@@ -63,7 +64,7 @@ class DataPreprocess:
         behaviors['impressions'] = Imp_list
 
         # Number of Unique Articles
-        items = list(set(chain.from_iterable(sub.keys() for sub in Imp_list)))
+        # items = list(set(chain.from_iterable(sub.keys() for sub in Imp_list)))
         # print(f'We are dealing with {len(items)} unique article ')
 
         # Merging duplicated auth rows into single record
@@ -74,10 +75,9 @@ class DataPreprocess:
         df_unpivoted = pd.DataFrame(
             [[i, k, v] for i, d in beh_merged[['user_id', 'impressions']].values for k, v in d.items()],
             columns=['user_id', 'item_id', 'rating'])
-        df_unpivoted.to_csv(os.path.join(self.__processeddata_path,'df_unpivoted.csv'))
+        df_unpivoted.to_csv(os.path.join(self.__processeddata_path, 'df_unpivoted.csv'))
 
     def Preprocessing_News(self):
-
         """
         This Method is concerned with merging news.tsv with behaviors.tsv
         to get replace news article id in behaviors.tsv with subcategories
@@ -104,7 +104,7 @@ class DataPreprocess:
         df_subcat = df_unpivoted.merge(news_df, how='left', left_on='item_id', right_on='News ID')
 
         # Check how many unique subcategories
-        SubCat_Num = df_subcat.SubCategory.nunique()
+        # SubCat_Num = df_subcat.SubCategory.nunique()
         # print(f'We are dealing with {SubCat_Num} unique Subcategories ')
 
         # Subset and rename the dataframe columns to match Matrix Factorization library ['user_id','item_id','rating']
@@ -138,7 +138,6 @@ class DataPreprocess:
         Args:
         DATA_DIR:  Directory for where raw data exists
         """
-
         self.df_unpivoted_path = os.path.join(self.__processeddata_path, 'df_unpivoted.csv')
         if not os.path.exists(self.df_unpivoted_path):
             self.Preprocessing_Behaviors()
@@ -161,14 +160,16 @@ class DataPreprocess:
 
         df_subcat.to_csv(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'Data', 'processed', 'Category_df.csv'), index=False)
 
-    def Users(self):
+    @staticmethod
+    def Users():
         # Loading News Dataset
         path = os.path.join(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'Data'), 'processed')
         df = pd.read_csv(path + '/df_unpivoted.csv').fillna("")
         users = df['user_id'].unique().tolist()  # 50000 Users
         return users
 
-    def Categories(self):
+    @staticmethod
+    def Categories():
         # Loading News Dataset
         path = os.path.join(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'Data'), 'processed')
         df = pd.read_csv(path + '/Category_df.csv').fillna("")[['Category', 'rating']].groupby(['Category'])\
@@ -178,9 +179,9 @@ class DataPreprocess:
 
 
 # ====Code Running====
-a = DataPreprocess()
+# a = DataPreprocess()
 # a.Preprocessing_Behaviors()
 # a.Preprocessing_News()
 # a.Preprocessing_Categories()
 # print(random.choice(a.Users()))
-print(a.Categories())
+# print(a.Categories())

@@ -4,11 +4,9 @@ import joblib
 import pandas as pd
 import numpy as np
 from datetime import datetime
-from typing import Dict, List
-from collections import defaultdict
+from typing import Dict
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error
-from surprise import Dataset, Reader
 from matrix_factorization import KernelMF, train_update_test_split
 
 
@@ -106,12 +104,12 @@ class matrix_factorization:
         else:
             self.model_status = {"status": "No Model found",
                                  "timestamp": datetime.now().isoformat(),
-                                 "precision": 0}
+                                 "rmse": 0}
 
     def _update_status(self, status: str, evaluation: int) -> None:
         self.model_status['status'] = status
         self.model_status['timestamp'] = datetime.now().isoformat()
-        self.model_status['precision'] = evaluation
+        self.model_status['rmse'] = evaluation
 
         with open(self.__status_path, 'w+') as file:
             json.dump(self.model_status, file, indent=2)
@@ -142,9 +140,10 @@ class matrix_factorization:
 
         # Evaluate Model
         rmse = mean_squared_error(y_test_update, pred, squared=False)
-        print(f"Matrix Factorization RMSE: {rmse:.4f}")
+        # print(f"Matrix Factorization RMSE: {rmse:.4f}")
 
         self._model = matrix_fact
+        self.pre = rmse
         joblib.dump(self._model, self.__model_path, compress=9)
         self._update_status(self.library+' '+self.mode+" Model Ready", self.pre)
 

@@ -12,7 +12,7 @@ import os
 import pandas as pd
 
 trainer = matrix_factorization(0)
-# trainer = SurpriseTrainer(0)
+trainer = SurpriseTrainer(0)
 app = FastAPI()
 temps = Jinja2Templates(directory='templates')
 app.mount("/static", StaticFiles(directory="static"), name="static")
