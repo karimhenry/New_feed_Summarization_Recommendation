@@ -166,4 +166,3 @@ class matrix_factorization:
 # print(a.get_status())
 # predictions = a.get_top_n('U1000', 5)
 # print(predictions['Articles'])
-

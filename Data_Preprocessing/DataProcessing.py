@@ -1,4 +1,6 @@
 import os
+import random
+
 import pandas as pd
 from itertools import chain
 
@@ -144,7 +146,7 @@ class DataPreprocess:
         df_unpivoted = pd.read_csv(self.df_unpivoted_path)
         df_unpivoted = df_unpivoted[['item_id', 'rating']]
         df_unpivoted = df_unpivoted.groupby(['item_id']).agg('sum')
-        df_unpivoted = df_unpivoted[df_unpivoted['rating'] > 0]
+        # df_unpivoted = df_unpivoted[df_unpivoted['rating'] > 0]
 
         # Loading News Dataset
         news = pd.read_csv(self.__rawdata_path + '/news.tsv', sep='\t', header=None, names=['News ID', 'Category', 'SubCategory', 'Title', 'Abstract', 'URL', 'Title Entities', 'Abstract Entities'])
@@ -159,9 +161,26 @@ class DataPreprocess:
 
         df_subcat.to_csv(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'Data', 'processed', 'Category_df.csv'), index=False)
 
+    def Users(self):
+        # Loading News Dataset
+        path = os.path.join(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'Data'), 'processed')
+        df = pd.read_csv(path + '/df_unpivoted.csv').fillna("")
+        users = df['user_id'].unique().tolist()  # 50000 Users
+        return users
+
+    def Categories(self):
+        # Loading News Dataset
+        path = os.path.join(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'Data'), 'processed')
+        df = pd.read_csv(path + '/Category_df.csv').fillna("")[['Category', 'rating']].groupby(['Category'])\
+            .agg('sum').sort_values(by=['rating'], ascending=False).reset_index()
+        categories = df['Category'].unique().tolist()  # 16 Users
+        return categories
+
 
 # ====Code Running====
-# a = DataPreprocess()
+a = DataPreprocess()
 # a.Preprocessing_Behaviors()
 # a.Preprocessing_News()
 # a.Preprocessing_Categories()
+# print(random.choice(a.Users()))
+print(a.Categories())

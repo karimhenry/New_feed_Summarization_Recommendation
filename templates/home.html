@@ -18,7 +18,7 @@
         <nav class="navbar navbar-expand-lg navbar-dark bg-dark" >
             <div class="container">
                 <a class="navbar-brand" href="/">Home</a>
-                <a class="navbar-brand" >{{user_id}}</a>
+                <a class="navbar-brand">{{user_id}}</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
                     <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
@@ -140,16 +140,30 @@
 
                 <!-- Side widgets-->
                 <div class="col-lg-4">
-                    <!-- Login widget-->
+
+                    <!-- history widget-->
                     <div class="card mb-4">
-                        <div class="card-header">Login</div>
+                        <div class="card-header">History</div>
                         <div class="card-body">
-                            <div class="input-group">
-                                <input id="uid" class="form-control" type="text" placeholder="Enter User ID" aria-label="Enter search term..." aria-describedby="button-search" />
-                                <button class="btn btn-primary" id="button-search" type="submit" data-toggle="modal" data-target="#myModal4" onclick="getData()">Login!</button>
+                            <div class="row">
+                                <div >
+                                    <ul class="list-unstyled mb-0">
+                                        <li><a href={{history_urls[0]}}>{{history[0]}}</a></li>
+                                        <li><a href={{history_urls[1]}}>{{history[1]}}</a></li>
+                                        <li><a href={{history_urls[2]}}>{{history[2]}}</a></li>
+                                        <li><a href={{history_urls[3]}}>{{history[3]}}</a></li>
+                                        <li><a href={{history_urls[4]}}>{{history[4]}}</a></li>
+                                        <li><a href={{history_urls[5]}}>{{history[5]}}</a></li>
+                                        <li><a href={{history_urls[6]}}>{{history[6]}}</a></li>
+                                        <li><a href={{history_urls[7]}}>{{history[7]}}</a></li>
+                                        <li><a href={{history_urls[8]}}>{{history[8]}}</a></li>
+                                        <li><a href={{history_urls[9]}}>{{history[9]}}</a></li>
+                                    </ul>
+                                </div>
                             </div>
                         </div>
                     </div>
+                    
                     <!-- Categories widget-->
                     <div class="card mb-4">
                         <div class="card-header">Categories</div>

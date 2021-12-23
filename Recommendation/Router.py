@@ -11,7 +11,7 @@ from Recommendation.matrix_factorization_recommender import matrix_factorization
 import os
 import pandas as pd
 
-# trainer = matrix_factorization(0)
+#trainer = matrix_factorization(0)
 trainer = SurpriseTrainer(0)
 app = FastAPI()
 temps = Jinja2Templates(directory='templates')
@@ -35,46 +35,42 @@ class PredictionObject(BaseModel):
 
 class PredictionsObject(BaseModel):
     predictions: List[PredictionObject]
-    # predictions: list
 
 
 class User(BaseModel):
     name: list
-    # age: list
 
 
 @app.get("/", response_class=HTMLResponse)
-def home(request: Request):
-    user_id = "New User"
-    top = 5
-
-    titles = []
-    summaries = []
-    urls = []
+def home(request: Request, user_id="New User", n=9):
+    predictions, titles, summaries, urls, categories = [], [], [], [], []
 
     # Loading News Dataset
-    path = os.path.join(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'Data'), 'raw')
-    news_df = pd.read_csv(path + '/news.tsv', sep='\t', header=None,
-                          names=['News ID', 'Category', 'SubCategory', 'Title', 'Abstract', 'URL', 'Title Entities',
-                                 'Abstract Entities']).fillna("")
+    path = os.path.join(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'Data'), 'processed')
+    news_df = pd.read_csv(path + '/Category_df.csv').fillna("")
+    news_df = news_df.sort_values(by=['rating'], ascending=False)
 
-    top_news = news_df["News ID"][:top]
+    for i in range(n):
+        predictions.append(str(news_df.iloc[i]['News ID']))
+        categories.append(str(news_df.iloc[i]['Category']).capitalize())
+        titles.append(str(news_df.iloc[i]['Title']))
+        urls.append(str(news_df.iloc[i]['URL']))
+        if news_df.iloc[i]['Abstract'] != "":
+            summaries.append(str(news_df.iloc[i]['Abstract']))
+        elif news_df.iloc[i]['Abstract'] != "":
+            summaries.append("Abstract Summary :- " + str(news_df.iloc[i]['Abstract']))
+        else:
+            summaries.append('"No Summary Available"')
 
-    for article in top_news:
-        titles.append(str(news_df[news_df['News ID'] == article].iloc[0]['Title']))
-        summaries.append(str(news_df[news_df['News ID'] == article].iloc[0]['Abstract']))
-        urls.append(str(news_df[news_df['News ID'] == article].iloc[0]['URL']))
     return temps.TemplateResponse("index.html",
-                                  {"request": request, "user_id": user_id, "predictions": top_news,
-                                   "titles": titles, "summaries": summaries, "urls": urls})
+                                  {"request": request, "user_id": user_id, "predictions": predictions,
+                                   "categories": categories, "titles": titles, "summaries": summaries, "urls": urls})
 
 
 @app.get("/recommend", response_class=HTMLResponse)
-def recommend(request: Request, user_id, n=5):
+def recommend(request: Request, user_id, n=9):
     try:
-        titles = []
-        summaries = []
-        urls = []
+        predictions, titles, summaries, urls, categories, history, history_urls = [], [], [], [], [], [], []
 
         # Loading News Dataset
         path = os.path.join(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'Data'), 'raw')
@@ -86,53 +82,81 @@ def recommend(request: Request, user_id, n=5):
 
         if not predictions:
             # Use Cold Start Option
+            user_id += " (New User)"
             top_news = news_df["News ID"][:n]
 
             for article in top_news:
+                categories.append(str(news_df[news_df['News ID'] == article].iloc[0]['Category']).capitalize())
                 titles.append(str(news_df[news_df['News ID'] == article].iloc[0]['Title']))
-                summaries.append(str(news_df[news_df['News ID'] == article].iloc[0]['Abstract']))
                 urls.append(str(news_df[news_df['News ID'] == article].iloc[0]['URL']))
-            return temps.TemplateResponse("index.html",
-                                          {"request": request, "user_id": user_id, "predictions": top_news,
-                                           "titles": titles, "summaries": summaries, "urls": urls})
-        else:
-            for article in predictions['Articles']:
-                titles.append(str(news_df[news_df['News ID'] == article].iloc[0]['Title']))
-                summaries.append(str(news_df[news_df['News ID'] == article].iloc[0]['Abstract']))
-                urls.append(str(news_df[news_df['News ID'] == article].iloc[0]['URL']))
+                if news_df[news_df['News ID'] == article].iloc[0]['Abstract'] != "":
+                    summaries.append(str(news_df[news_df['News ID'] == article].iloc[0]['Abstract']))
+                elif news_df[news_df['News ID'] == article].iloc[0]['Abstract'] != "":
+                    summaries.append("Abstract Summary :- " + str(news_df[news_df['News ID'] == article].iloc[0]['Abstract']))
+                else:
+                    summaries.append('"No Summary Available"')
 
             return temps.TemplateResponse("index.html",
-                                          {"request": request, "user_id": user_id, "predictions": predictions,
-                                           "titles": titles, "summaries": summaries, "urls": urls})
+                                          {"request": request, "user_id": user_id,
+                                           "predictions": top_news, "categories": categories,
+                                           "titles": titles, "summaries": summaries, "urls": urls, "history": history,
+                                           "history_urls": history_urls})
+        else:
+            for article in predictions['Articles']:
+                categories.append(str(news_df[news_df['News ID'] == article].iloc[0]['Category']).capitalize())
+                titles.append(str(news_df[news_df['News ID'] == article].iloc[0]['Title']))
+                urls.append(str(news_df[news_df['News ID'] == article].iloc[0]['URL']))
+                if news_df[news_df['News ID'] == article].iloc[0]['Abstract'] != "":
+                    summaries.append(str(news_df[news_df['News ID'] == article].iloc[0]['Abstract']))
+                elif news_df[news_df['News ID'] == article].iloc[0]['Abstract'] != "":
+                    summaries.append("Abstract Summary :- " + str(news_df[news_df['News ID'] == article].iloc[0]['Abstract']))
+                else:
+                    summaries.append('"No Summary Available"')
+
+            # Loading News Dataset
+            path = os.path.join(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'Data'), 'processed')
+            df = pd.read_csv(path + '/df_unpivoted.csv').fillna("")
+            df = df[(df["user_id"] == user_id) & (df["rating"] > 0)]
+            merged_df = df.merge(news_df, how='left', left_on='item_id', right_on='News ID')
+            history = merged_df["Title"].tolist()
+            history_urls = merged_df["URL"].tolist()
+
+            return temps.TemplateResponse("home.html",
+                                          {"request": request, "user_id": user_id,
+                                           "predictions": predictions['Articles'], "categories": categories,
+                                           "titles": titles, "summaries": summaries, "urls": urls, "history": history,
+                                           "history_urls": history_urls})
 
     except Exception as e:
         raise HTTPException(status_code=503, detail=str(e))
 
 
 @app.get("/category", response_class=HTMLResponse)
-def category(request: Request, category, n=5):
+def category(request: Request, category, n=9):
     try:
-        titles = []
-        summaries = []
-        urls = []
-        predictions = []
+        predictions, titles, summaries, urls, categories = [], [], [], [], []
 
         # Loading News Dataset
-        path = os.path.join(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'Data'),
-                            'processed')
+        path = os.path.join(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'Data'), 'processed')
         news_df = pd.read_csv(path + '/Category_df.csv').fillna("")
         news_df = news_df[news_df['Category'] == category.lower()]
         n = min(n, news_df.shape[0])
 
         for i in range(n):
             predictions.append(str(news_df.iloc[i]['News ID']))
+            categories.append(str(news_df.iloc[i]['Category']).capitalize())
             titles.append(str(news_df.iloc[i]['Title']))
-            summaries.append(str(news_df.iloc[i]['Abstract']))
             urls.append(str(news_df.iloc[i]['URL']))
+            if news_df.iloc[i]['Abstract'] != "":
+                summaries.append(str(news_df.iloc[i]['Abstract']))
+            elif news_df.iloc[i]['Abstract'] != "":
+                summaries.append("Abstract Summary :- " + str(news_df.iloc[i]['Abstract']))
+            else:
+                summaries.append('"No Summary Available"')
 
         return temps.TemplateResponse("index.html",
                                       {"request": request, "user_id": category, "predictions": predictions,
-                                       "titles": titles, "summaries": summaries, "urls": urls})
+                                       "categories": categories, "titles": titles, "summaries": summaries, "urls": urls})
 
     except Exception as e:
         raise HTTPException(status_code=503, detail=str(e))
