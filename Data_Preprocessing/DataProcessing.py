@@ -1,6 +1,6 @@
 import os
 import pandas as pd
-# import random
+import random
 # from itertools import chain
 
 
@@ -65,7 +65,6 @@ class DataPreprocess:
 
         # Number of Unique Articles
         # items = list(set(chain.from_iterable(sub.keys() for sub in Imp_list)))
-        # print(f'We are dealing with {len(items)} unique article ')
 
         # Merging duplicated auth rows into single record
         beh_merged = behaviors[['user_id', 'history', 'impressions']]
@@ -105,7 +104,6 @@ class DataPreprocess:
 
         # Check how many unique subcategories
         # SubCat_Num = df_subcat.SubCategory.nunique()
-        # print(f'We are dealing with {SubCat_Num} unique Subcategories ')
 
         # Subset and rename the dataframe columns to match Matrix Factorization library ['user_id','item_id','rating']
         df_subcat = df_subcat[['user_id', 'SubCategory', 'rating']]

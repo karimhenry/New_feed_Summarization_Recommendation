@@ -5,14 +5,22 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
+from Data_Preprocessing.DataProcessing import DataPreprocess
 from Recommendation.surprise_recommender import SurpriseTrainer
 from Recommendation.matrix_factorization_recommender import matrix_factorization
 
 import os
+import random
 import pandas as pd
 
+# Data PreProcessing
+preprocessing = DataPreprocess()
+
+# Recommender Models
 trainer = matrix_factorization(0)
 trainer = SurpriseTrainer(0)
+
+# Web API
 app = FastAPI()
 temps = Jinja2Templates(directory='templates')
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -77,9 +85,11 @@ def home(request: Request, user_id="New User", n=9):
             else:
                 summaries.append("")
 
+        test_user = random.choice(preprocessing.Users())
+
         return temps.TemplateResponse("index.html",
-                                      {"request": request, "user_id": user_id, "predictions": predictions,
-                                       "categories": categories, "titles": titles, "summaries": summaries, "urls": urls})
+                                      {"request": request, "user_id": user_id, "predictions": predictions, "urls": urls,
+                                       "categories": categories, "titles": titles, "summaries": summaries, "test_user": test_user})
 
     except Exception as e:
         raise HTTPException(status_code=503, detail=str(e))
@@ -94,6 +104,7 @@ def category(request: Request, category, n=9):
         path = os.path.join(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'Data'), 'processed')
         news_df = pd.read_csv(path + '/Category_df.csv').fillna("")
         news_df = news_df[news_df['Category'] == category.lower()]
+        news_df = news_df.sort_values(by=['rating'], ascending=False)
 
         # Loading Summary Dataset
         path = os.path.join(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'Data'), 'summary')
@@ -123,9 +134,11 @@ def category(request: Request, category, n=9):
             else:
                 summaries.append("")
 
+        test_user = random.choice(preprocessing.Users())
+
         return temps.TemplateResponse("index.html",
-                                      {"request": request, "user_id": category, "predictions": predictions,
-                                       "categories": categories, "titles": titles, "summaries": summaries, "urls": urls})
+                                      {"request": request, "user_id": category, "predictions": predictions, "urls": urls,
+                                       "categories": categories, "titles": titles, "summaries": summaries, "test_user": test_user})
 
     except Exception as e:
         raise HTTPException(status_code=503, detail=str(e))
@@ -137,9 +150,13 @@ def recommend(request: Request, user_id, n=9):
         predictions, titles, summaries, urls, categories, history, history_urls = [], [], [], [], [], [], []
 
         # Loading News Dataset
-        path = os.path.join(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'Data'), 'raw')
-        news_df = pd.read_csv(path + '/news.tsv', sep='\t', header=None,
-                              names=['News ID', 'Category', 'SubCategory', 'Title', 'Abstract', 'URL', 'Title Entities', 'Abstract Entities'])
+        # path = os.path.join(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'Data'), 'raw')
+        # news_df = pd.read_csv(path + '/news.tsv', sep='\t', header=None,
+        #                      names=['News ID', 'Category', 'SubCategory', 'Title', 'Abstract', 'URL', 'Title Entities', 'Abstract Entities'])
+
+        path = os.path.join(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'Data'), 'processed')
+        news_df = pd.read_csv(path + '/Category_df.csv').fillna("")
+        news_df = news_df.sort_values(by=['rating'], ascending=False)
 
         # Loading Summary Dataset
         path = os.path.join(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'Data'), 'summary')
@@ -149,6 +166,7 @@ def recommend(request: Request, user_id, n=9):
         # Merging News With Summary Dataset
         news_df = news_df.merge(summary_df, how='left', left_on='News ID', right_on='News ID').fillna("")
         news_df = news_df.replace("Nan", "").replace("nan", "")
+        news_df = news_df.sort_values(by=['rating'], ascending=False)
 
         # Load Users' Predictions
         predictions = trainer.get_top_n(user_id, int(n))
@@ -174,12 +192,18 @@ def recommend(request: Request, user_id, n=9):
                 else:
                     summaries.append("")
 
-            return temps.TemplateResponse("index.html",
+            return temps.TemplateResponse("home.html",
                                           {"request": request, "user_id": user_id,
                                            "predictions": top_news, "categories": categories,
                                            "titles": titles, "summaries": summaries, "urls": urls, "history": history,
                                            "history_urls": history_urls})
         else:
+            # if loaded recommendation less than the required printing spaces
+            if len(predictions['Articles']) < (n+1):
+                extension = (n+1) - len(predictions['Articles'])
+                top = news_df['News ID'][:extension].tolist()
+                predictions['Articles'].extend(top)
+
             for article in predictions['Articles']:
                 categories.append(str(news_df[news_df['News ID'] == article].iloc[0]['Category']).capitalize())
                 titles.append(str(news_df[news_df['News ID'] == article].iloc[0]['Title']))
@@ -202,14 +226,13 @@ def recommend(request: Request, user_id, n=9):
 
             # Merging History with News Dataset
             merged_df = df.merge(news_df, how='left', left_on='item_id', right_on='News ID')
-            history = merged_df["Title"].tolist()
+            history = (merged_df["Title"] + " (" + merged_df["Category"] + ")").tolist()
             history_urls = merged_df["URL"].tolist()
 
             return temps.TemplateResponse("home.html",
-                                          {"request": request, "user_id": user_id,
+                                          {"request": request, "user_id": user_id, "history_urls": history_urls,
                                            "predictions": predictions['Articles'], "categories": categories,
-                                           "titles": titles, "summaries": summaries, "urls": urls, "history": history,
-                                           "history_urls": history_urls})
+                                           "titles": titles, "summaries": summaries, "urls": urls, "history": history})
 
     except Exception as e:
         raise HTTPException(status_code=503, detail=str(e))

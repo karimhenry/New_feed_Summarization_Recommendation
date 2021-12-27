@@ -29,6 +29,7 @@ print(MF_Recommender.get_status())  # Creates "model_pickle_sub.json" in "../sto
 # -------------------------------
 Surprise_Recommender = SurpriseTrainer(0)  # 0 for Articles
 Surprise_Recommender.train()  # Creates "model_pickle_articles.joblib" in "../storage/storage_surprise/"
+Surprise_Recommender.gridsearch()  # Creates "model_pickle_articles.joblib" in "../storage/storage_surprise/"
 print(Surprise_Recommender.get_status())  # Creates "model_pickle_articles.json" in "../storage/storage_surprise/"
 
 ########################################################################################################################

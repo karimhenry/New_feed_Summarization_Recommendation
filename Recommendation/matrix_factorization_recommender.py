@@ -140,7 +140,6 @@ class matrix_factorization:
 
         # Evaluate Model
         rmse = mean_squared_error(y_test_update, pred, squared=False)
-        # print(f"Matrix Factorization RMSE: {rmse:.4f}")
 
         self._model = matrix_fact
         self.pre = rmse

@@ -3,11 +3,11 @@ import json
 import joblib
 import random
 import pandas as pd
+from typing import Dict, List
 from datetime import datetime
 from collections import defaultdict
 from surprise import Dataset, SVD, Reader, accuracy
 from surprise.model_selection import train_test_split, GridSearchCV
-from typing import Dict, List
 
 
 class surprise_L:
@@ -33,23 +33,15 @@ class surprise_L:
         A dict where keys are auth (raw) ids and values are lists of tuples:
             [(raw item id, rating estimation), ...] of size n.
         """
-
         # First map the predictions to each auth.
         top_n = defaultdict(list)
         for uid, iid, true_r, est, _ in predictions:
-            # top_n[uid].append((iid, est))
             top_n[uid].append(iid)
 
         # Then sort the predictions for each auth and retrieve the k the highest ones.
         for uid, user_ratings in top_n.items():
             user_ratings.sort(key=lambda x: x[1], reverse=True)
             top_n[uid] = user_ratings[:n]
-
-        # top_n[uid] = set(top_n[uid])
-        # Print the recommended items for each auth
-        #     for uid, user_ratings in top_n.items():
-        #         print(uid, [iid for (iid, _) in user_ratings])
-        # top_n = {'Top 10 articles for you':set(top_n[uid])}
 
         return top_n
 
@@ -142,68 +134,26 @@ class SurpriseTrainer:
                                  "timestamp": datetime.now().isoformat(),
                                  "precision": 0}
 
-        # self._running_threads = []
-        # self._pipeline = None
-
     def get_status(self) -> Dict:
         return self.model_status
 
-    # def _train_job(self, x_train: List[str], x_test: List[str], y_train: List[Union[str, int]],
-    #                y_test: List[Union[str, int]]):
-    #     self._pipeline.fit(x_train, y_train)
-    #     report = classification_report(
-    #         y_test, self._pipeline.predict(x_test), output_dict=True)
-    #     classes = self._pipeline.classes_.tolist()
-    #     self._update_status("Model Ready", classes, report)
-    #     joblib.dump(self._pipeline, self.__model_path, compress=9)
-    #     self.model = self._pipeline
-    #     self._pipeline = None
-    #     thread_id = get_ident()
-    #     for i, t in enumerate(self._running_threads):
-    #         if t.ident == thread_id:
-    #             self._running_threads.pop(i)
-    #             break
-
     def train(self) -> None:
-        # if len(self._running_threads):
-        #     raise Exception("A training process is already running.")
-
-        # if self.library == 0:
         self.trainset, self.testset = surprise_L.dataloader(self.data)
 
-        algo = SVD(n_factors=100, n_epochs=10, biased=True, init_mean=0, init_std_dev=0.1,
-                   lr_all=0.005, reg_all=0.02, lr_bu=None, lr_bi=None, lr_pu=None, lr_qi=None,
-                   reg_bu=None, reg_bi=None, reg_pu=None, reg_qi=None, random_state=42, verbose=True, )
+        algo = SVD(n_factors=50, n_epochs=20, biased=True, init_mean=0, init_std_dev=0.1,
+                   lr_all=0.002, reg_all=0.02, lr_bu=None, lr_bi=None, lr_pu=None, lr_qi=None,
+                   reg_bu=None, reg_bi=None, reg_pu=None, reg_qi=None, random_state=42, verbose=False)
 
         self._model = algo.fit(self.trainset)
-
         self.predictions1 = algo.test(self.testset)
 
-        # if os.path.exists(self.__model_path):
-        # self.model = joblib.load(self.__model_path)
-        # self.predictions1 = self.model.test(self.testset)
-
-        precisions1, recall1 = surprise_L.precision_recall_at_k(self.predictions1, k=20, threshold=0.15)
+        precisions1, recall1 = surprise_L.precision_recall_at_k(self.predictions1, k=20, threshold=0.1)
         self.pre = (sum(prec for prec in precisions1.values()) / len(precisions1))
-        print(f'Training finished with precision {self.pre}')
 
         joblib.dump(self._model, self.__model_path, compress=9)
-
-        self._update_status(self.library+' '+self.mode+" Model Ready",  self.pre)
-        # self.model = self._pipeline
-
-        # elif self.library == 1:
-        #     mf = matrix_factorization('article')
-        # update model status
-        # self.model = None
-        # self._update_status("Training")
-        #
-        # t = Thread(target=self._train_job, args=(trainset, testset))
-        # self._running_threads.append(t)
-        # t.start()
+        self._update_status(self.library + ' ' + self.mode + " Model Ready", self.pre, accuracy.rmse(self.predictions1))
 
     def _predict(self) -> List[Dict]:
-        # self.__predictions_path = os.path.join(self.__data_path, 'predictions')
         if not os.path.exists(self.__predictions_path):
             os.mkdir(self.__predictions_path)
 
@@ -214,34 +164,25 @@ class SurpriseTrainer:
 
         if self.model:
             reader = Reader(rating_scale=(0, 1))
-            dataDF = Dataset.load_from_df(self.data[['user_id', 'item_id', 'rating']].head(1000), reader)
+            dataDF = Dataset.load_from_df(self.data[['user_id', 'item_id', 'rating']], reader)
             trainset = dataDF.build_full_trainset()
 
-            print('shuffle in memo')
+            # shuffling in memory
             testset = trainset.build_anti_testset()
-            print('end of shuffle in memo')
 
             self.predictions1 = self.model.test(testset)
             top_preds = (surprise_L.get_top_n(self.predictions1, n=50))
+
             with open(os.path.join(self.__predictions_path, 'predictions_' + self.mode + '.json'), 'w') as f:
                 json.dump(top_preds, f)
+
             return top_preds
 
-        #   probs = self.model.predict_proba(texts)
-        #     for i, row in enumerate(probs):
-        #         row_pred = {}
-        #         row_pred['text'] = texts[i]
-        #         row_pred['predictions'] = {class_: round(float(prob), 3) for class_, prob in zip(
-        #             self.model_status['classes'], row)}
-        #         response.append(row_pred)
-        # else:
-        #     raise Exception("No Trained model was found.")
-        # return response
-
-    def _update_status(self, status: str, evaluation: int) -> None:
+    def _update_status(self, status: str, evaluation: int, rmse: int) -> None:
         self.model_status['status'] = status
         self.model_status['timestamp'] = datetime.now().isoformat()
         self.model_status['precision'] = evaluation
+        self.model_status['RMSE'] = rmse
 
         with open(self.__status_path, 'w+') as file:
             json.dump(self.model_status, file, indent=2)
@@ -253,73 +194,40 @@ class SurpriseTrainer:
             return False
 
     def gridsearch(self) -> None:
-        # # if len(self._running_threads):
-        # #     raise Exception("A training process is already running.")
-        #
-        # # if self.library == 0:
-        # self.trainset, self.testset = surprise_L.dataloader(self.data)
-        #
-        # algo = SVD(n_factors=100, n_epochs=10, biased=True,init_mean=0, init_std_dev=0.1,
-        #            lr_all=0.005, reg_all=0.02, lr_bu=None,lr_bi=None, lr_pu=None,lr_qi=None,
-        #            reg_bu=None,reg_bi=None, reg_pu=None,reg_qi=None, random_state=42,verbose=True, )
-        #
-        # self._model = algo.fit(self.trainset)
-        #
-        # self.predictions1 = algo.test(self.testset)
-        # # if os.path.exists(self.__model_path):
-        # # self.model = joblib.load(self.__model_path)
-        # # self.predictions1 = self.model.test(self.testset)
-        # precisions1, recall1 = surprise_L.precision_recall_at_k(self.predictions1, k=20, threshold=0.15)
-        # self.pre = (sum(prec for prec in precisions1.values()) / len(precisions1))
-        # print(f'Training finished with precision {self.pre}')
-
-        # Load the full dataset.
         reader = Reader(rating_scale=(0, 1))
         data = Dataset.load_from_df(self.data[['user_id', 'item_id', 'rating']], reader)
-
         raw_ratings = data.raw_ratings
 
         # shuffle ratings if you want
         random.shuffle(raw_ratings)
 
-        # A = 90% of the data, B = 10% of the data
-        threshold = int(.9 * len(raw_ratings))
-        A_raw_ratings = raw_ratings[:threshold]
-        B_raw_ratings = raw_ratings[threshold:]
+        threshold = int(1 * len(raw_ratings))
+        data.raw_ratings = raw_ratings[:threshold]  # data is now the set A
 
-        data.raw_ratings = A_raw_ratings  # data is now the set A
-
-        # Select your best algo with grid search.
-        print('Grid Search...')
-        param_grid = {'n_epochs': [5, 10], 'lr_all': [0.002, 0.005]}
-        grid_search = GridSearchCV(SVD, param_grid, measures=['rmse'], cv=3)
+        param_grid = {'lr_all': [0.002, 0.005], 'n_factors': [50, 120]}
+        grid_search = GridSearchCV(SVD, param_grid, measures=['rmse'], cv=5, joblib_verbose=False)
         grid_search.fit(data)
 
         algo = grid_search.best_estimator['rmse']
+        # params = grid_search.best_params
 
-        # retrain on the whole set A
         trainset = data.build_full_trainset()
-        algo.fit(trainset)
+        self._model = algo.fit(trainset)
 
-        # Compute biased accuracy on A
         predictions = algo.test(trainset.build_testset())
-        print('Biased accuracy on A,', end='   ')
         accuracy.rmse(predictions)
-        precisions1, recall1 = surprise_L.precision_recall_at_k(predictions, k=20, threshold=0.15)
-        print('precision: ', sum(prec for prec in precisions1.values()) / len(precisions1))
 
-        # Compute unbiased accuracy on B
-        testset = data.construct_testset(B_raw_ratings)  # testset is now the set B
-        predictions = algo.test(testset)
-        print('Unbiased accuracy on B,', end=' ')
-        accuracy.rmse(predictions)
         precisions1, recall1 = surprise_L.precision_recall_at_k(predictions, k=20, threshold=0.15)
-        print('precision: ', sum(prec for prec in precisions1.values()) / len(precisions1))
+        pre = sum(prec for prec in precisions1.values()) / len(precisions1)
+
+        joblib.dump(self._model, self.__model_path, compress=9)
+        self._update_status(self.library + ' ' + self.mode + " Model Ready", pre, accuracy.rmse(predictions))
 
 
 # ====Code Running====
 # a = SurpriseTrainer(0)
 # a.train()
+# a.gridsearch()
 # print(a.get_status())
 # predictions = a.get_top_n('U1000', 10)
 # print(predictions)
