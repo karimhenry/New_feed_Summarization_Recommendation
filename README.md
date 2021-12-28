@@ -1,9 +1,10 @@
 # News Feed Summarization and Recommendation
 - Summarize key information of a given News feed and Recommend to user a set of summarized articles matching his/her interest.
 
-## Sponsored by  Orange Innovation Egypt Project
+### - Instructed By Artificial Intelligence Professional Training Program (AI-Pro) - Information Technology Institute (ITI) 
+### - Supervised By  Orange Innovation Egypt Project
 
-- [Presentation Link](https://docs.google.com/presentation/d/1536WLXjunobkA0Jt83VhAaOTKIWGRsUg/edit?usp=sharing&ouid=114999608387157692062&rtpof=true&sd=true)
+###- [Presentation Link](https://docs.google.com/presentation/d/1536WLXjunobkA0Jt83VhAaOTKIWGRsUg/)
 
 ## Team Members :-
 1) Karim Atef Henry
@@ -40,7 +41,6 @@
 
 Project Organization :-
 -----------------------
-    ├── README.md             -> The top-level README for developers using this project.
     │
     ├── Data
     │   ├── prediction        -> Prediction for all users
@@ -53,7 +53,8 @@ Project Organization :-
     │   ├── processed         -> Dataset after preprocessing
     │   │    ├── Category_df.csv
     │   │    ├── df_unpivoted.csv
-    │   │    └── SubCat_Df.csv
+    │   │    ├── SubCat_Df.csv
+    │   │    └── news_articles.p
     │   │
     │   ├── raw               -> The original MIND dataset
     │   │    ├── behaviours.tsv
@@ -102,6 +103,8 @@ Project Organization :-
     │   └── index.html
     │
     ├── main.py               -> contains Main run file
+    │
+    ├── README.md             -> The top-level README for developers using this project.
     │
     ├── requirements.txt      -> contains Requirement libraries to run this project
     │

@@ -7,8 +7,6 @@ from pathlib import Path
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 
-lem = WordNetLemmatizer()
-
 
 class Article:
     def scraper(url):
@@ -42,6 +40,7 @@ class Article:
 
     def cleaningArticle(ArticleOrSummary, row):
         """Function to clean article and summary"""
+        lem = WordNetLemmatizer()
         if ArticleOrSummary == "article":
             row = row.split(",")
             row = " ,".join(row[1:])
