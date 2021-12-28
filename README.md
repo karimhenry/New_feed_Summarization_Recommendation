@@ -1,7 +1,7 @@
 # News Feed Summarization and Recommendation
 - Summarize key information of a given News feed and Recommend to user a set of summarized articles matching his/her interest.
 
-### - Instructed By Artificial Intelligence Professional Training Program (AI-Pro) - Information Technology Institute (ITI) 
+### - Instructed By Information Technology Institute (ITI) - Artificial Intelligence Professional Training Program (AI-Pro)
 ### - Supervised By  Orange Innovation Egypt Project
 
 #### - [Presentation Link](https://docs.google.com/presentation/d/1536WLXjunobkA0Jt83VhAaOTKIWGRsUg/)
