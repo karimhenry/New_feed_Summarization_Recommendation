@@ -30,6 +30,7 @@ print(MF_Recommender.get_status())  # Creates "model_pickle_sub.json" in "../sto
 Surprise_Recommender = SurpriseTrainer(0)  # 0 for Articles
 Surprise_Recommender.train()  # Creates "model_pickle_articles.joblib" in "../storage/storage_surprise/"
 Surprise_Recommender.gridsearch()  # Creates "model_pickle_articles.joblib" in "../storage/storage_surprise/"
+Surprise_Recommender._predict()   # Creates "predictions_articles.json" in "../Data/predictions/predictions_surprise/"
 print(Surprise_Recommender.get_status())  # Creates "model_pickle_articles.json" in "../storage/storage_surprise/"
 
 ########################################################################################################################
@@ -37,4 +38,6 @@ print(Surprise_Recommender.get_status())  # Creates "model_pickle_articles.json"
 # -----------------------------------
 Surprise_Recommender = SurpriseTrainer(1)  # 1 for Subcategories
 Surprise_Recommender.train()  # Creates "model_pickle_sub.joblib" in "../storage/storage_surprise/"
+Surprise_Recommender.gridsearch()  # Creates "model_pickle_sub.joblib" in "../storage/storage_surprise/"
+Surprise_Recommender._predict()   # Creates "predictions_sub.json" in "../Data/predictions/predictions_surprise/"
 print(Surprise_Recommender.get_status())  # Creates "model_pickle_sub.json" in "../storage/storage_surprise/"

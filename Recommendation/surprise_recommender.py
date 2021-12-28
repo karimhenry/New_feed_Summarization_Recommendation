@@ -165,13 +165,12 @@ class SurpriseTrainer:
         if self.model:
             reader = Reader(rating_scale=(0, 1))
             dataDF = Dataset.load_from_df(self.data[['user_id', 'item_id', 'rating']], reader)
-            trainset = dataDF.build_full_trainset()
 
-            # shuffling in memory
+            trainset = dataDF.build_full_trainset()
             testset = trainset.build_anti_testset()
 
             self.predictions1 = self.model.test(testset)
-            top_preds = (surprise_L.get_top_n(self.predictions1, n=50))
+            top_preds = surprise_L.get_top_n(self.predictions1, n=10)
 
             with open(os.path.join(self.__predictions_path, 'predictions_' + self.mode + '.json'), 'w') as f:
                 json.dump(top_preds, f)

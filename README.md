@@ -32,8 +32,6 @@ Project Organization :-
     │   │    │   └── predictions_subcategories.json
     │   │    │
     │   │    └── prediction_matrix_factorization
-    │   │        ├── model_pickle_aricle.joblib
-    │   │        └── model_status_article.json
     │   │
     │   ├── processed      <- Dataset after preprocessing.
     │   │    ├── Category_df.csv
