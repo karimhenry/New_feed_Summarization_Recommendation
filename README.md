@@ -1,14 +1,23 @@
 # News Feed Summarization and Recommendation
-- Summarize key information of a given News feed and Recommend to user a set of summarized articles matching his/her interest
+- Summarize key information of a given News feed and Recommend to user a set of summarized articles matching his/her interest.
+
+
+- [Presentation Link](https://docs.google.com/presentation/d/1536WLXjunobkA0Jt83VhAaOTKIWGRsUg/edit?usp=sharing&ouid=114999608387157692062&rtpof=true&sd=true)
 
 ## About Dataset :-
-- The MIND dataset for news recommendation was collected from anonymize behavior logs of Microsoft News website. The data randomly sampled 1 million users who had at least 5 news clicks during 6 weeks from October 12 to November 22, 2019. To protect user privacy, each user is de-linked from the production system when securely hashed into an anonymized ID. Also collected the news click behaviors of these users in this period, which are formatted into impression logs. The impression logs have been used in the last week for test, and the logs in the fifth week for training. For samples in training set, used the click behaviors in the first four weeks to construct the news click history for user modeling. Among the training data, the samples in the last day of the fifth week used as validation set. This dataset is a small version of MIND (MIND-small), by randomly sampling 50,000 users and their behavior logs. Only training and validation sets are contained in the MIND-small dataset.
+- The MIND dataset for news recommendation was collected from anonymize behavior logs of Microsoft News website.
+- The data randomly sampled 1 million users who had at least 5 news clicks during 6 weeks from October 12 to November 22, 2019.
+- To protect user privacy, each user is de-linked from the production system when securely hashed into an anonymized ID.
+- Also collected the news click behaviors of these users in this period, which are formatted into impression logs.
+- The impression logs have been used in the last week for test, and the logs in the fifth week for training.
+- For samples in training set, used the click behaviors in the first four weeks to construct the news click history for user modeling.
+- Among the training data, the samples in the last day of the fifth week used as validation set.
+- This dataset is a small version of MIND (MIND-small), by randomly sampling 50,000 users and their behavior logs.
+- Only training and validation sets are contained in the MIND-small dataset.
 
 ## Technologies Used :-
 - **Recommendations :-** Matrix Factorization and Surprise Libraries
 - **Summarization :-** Extractive and Abstractive
-
-###[Presentation Link](https://docs.google.com/presentation/d/1536WLXjunobkA0Jt83VhAaOTKIWGRsUg/edit?usp=sharing&ouid=114999608387157692062&rtpof=true&sd=true)
 
 ## Instructions :-
 1) Install "requirement.txt" Packages :- 
@@ -24,37 +33,37 @@
 
 Project Organization :-
 -----------------------
-    ├── README.md          <- The top-level README for developers using this project.
+    ├── README.md          -> The top-level README for developers using this project.
     ├── Data
-    │   ├── prediction     <- Prediction for all users
+    │   ├── prediction     -> Prediction for all users
     │   │    ├── prediction_surprise
     │   │    │   ├── predictions_articles.json
     │   │    │   └── predictions_subcategories.json
     │   │    │
     │   │    └── prediction_matrix_factorization
     │   │
-    │   ├── processed      <- Dataset after preprocessing.
+    │   ├── processed      -> Dataset after preprocessing.
     │   │    ├── Category_df.csv
     │   │    ├── df_unpivoted.csv
     │   │    └── SubCat_Df.csv
     │   │
-    │   ├── raw            <- The original MIND dataset.
+    │   ├── raw            -> The original MIND dataset.
     │   │    ├── behaviours.tsv
     │   │    └── news.tsv
     │   │
-    │   └── summary         <- Generated Summary using Lex Rank
+    │   └── summary         -> Generated Summary using Lex Rank
     │        └── LexRankSummary.p
     │
-    ├── Data_Preprocessing  <- Scripts to Preprocessing raw data for modeling
+    ├── Data_Preprocessing  -> Scripts to Preprocessing raw data for modeling
     │   └── DataProcessing.py
     │
-    ├── Recommendation     <- Scripts to generate the model and predicted json arrays
+    ├── Recommendation     -> Scripts to generate the model and predicted json arrays
     │   ├── matrix_factorization_recommender.py
     │   ├── surprise_recommender.py
     │   ├── Router.py
     │   └── Recommender_Trainer.py
     │
-    ├── static     <- Template Assets,CSS and JS
+    ├── static     -> Template Assets,CSS and JS
     │   ├── assets
     │   │   └── favicon.ico
     │   ├── css
@@ -62,7 +71,7 @@ Project Organization :-
     │   └── js
     │       └── scripts.js
     │
-    ├── storage     <- contains Generated model 
+    ├── storage     -> contains Generated model 
     │   ├── storage_surprise
     │   │   ├── model_pickle_sub.joblib
     │   │   ├── model_pickle_aricles.joblib
@@ -75,14 +84,14 @@ Project Organization :-
     │       ├── model_status_sub.json
     │       └── model_status_articles.json
     │
-    ├── templates          <- Contains .html files
+    ├── templates          -> contains .html files
     │   ├── home.html
     │   └── index.html
     │
-    ├── main.py            <- Contains Main run file
+    ├── main.py            -> contains Main run file
     │
-    ├── requirements.txt
+    ├── requirements.txt   -> contains Requirement libraries to run this project
     │
-    └── run.sh
+    └── run.sh             -> uvicorn redirecting script
 
 --------
