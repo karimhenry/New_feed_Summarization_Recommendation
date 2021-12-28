@@ -1,8 +1,15 @@
 # News Feed Summarization and Recommendation
 - Summarize key information of a given News feed and Recommend to user a set of summarized articles matching his/her interest.
 
+## Sponsored by  Orange Innovation Egypt Project
 
 - [Presentation Link](https://docs.google.com/presentation/d/1536WLXjunobkA0Jt83VhAaOTKIWGRsUg/edit?usp=sharing&ouid=114999608387157692062&rtpof=true&sd=true)
+
+## Team Members :-
+1) Karim Atef Henry
+2) Mohamed Ahmed Hassan
+3) Fady Nasser Fawzy
+4) Hoyam Nabil
 
 ## About Dataset :-
 - The MIND dataset for news recommendation was collected from anonymize behavior logs of Microsoft News website.
