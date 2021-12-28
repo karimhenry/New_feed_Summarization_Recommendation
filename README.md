@@ -64,6 +64,11 @@ Project Organization :-
     │   ├── Router.py
     │   └── Recommender_Trainer.py
     │
+    ├── Summarization         -> Scripts to generate the model and predicted json arrays
+    │   ├── app.py
+    │   ├── summarizer.py
+    │   └── utils.py
+    │
     ├── static                -> Template Assets,CSS and JS
     │   ├── assets
     │   │   └── favicon.ico

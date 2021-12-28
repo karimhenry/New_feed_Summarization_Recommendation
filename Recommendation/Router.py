@@ -150,10 +150,6 @@ def recommend(request: Request, user_id, n=9):
         predictions, titles, summaries, urls, categories, history, history_urls = [], [], [], [], [], [], []
 
         # Loading News Dataset
-        # path = os.path.join(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'Data'), 'raw')
-        # news_df = pd.read_csv(path + '/news.tsv', sep='\t', header=None,
-        #                      names=['News ID', 'Category', 'SubCategory', 'Title', 'Abstract', 'URL', 'Title Entities', 'Abstract Entities'])
-
         path = os.path.join(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'Data'), 'processed')
         news_df = pd.read_csv(path + '/Category_df.csv').fillna("")
         news_df = news_df.sort_values(by=['rating'], ascending=False)
