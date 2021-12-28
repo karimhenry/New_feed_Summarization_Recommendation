@@ -33,37 +33,38 @@
 
 Project Organization :-
 -----------------------
-    ├── README.md          -> The top-level README for developers using this project.
+    ├── README.md             -> The top-level README for developers using this project.
+    │
     ├── Data
-    │   ├── prediction     -> Prediction for all users
+    │   ├── prediction        -> Prediction for all users
     │   │    ├── prediction_surprise
     │   │    │   ├── predictions_articles.json
     │   │    │   └── predictions_subcategories.json
     │   │    │
     │   │    └── prediction_matrix_factorization
     │   │
-    │   ├── processed      -> Dataset after preprocessing.
+    │   ├── processed         -> Dataset after preprocessing
     │   │    ├── Category_df.csv
     │   │    ├── df_unpivoted.csv
     │   │    └── SubCat_Df.csv
     │   │
-    │   ├── raw            -> The original MIND dataset.
+    │   ├── raw               -> The original MIND dataset
     │   │    ├── behaviours.tsv
     │   │    └── news.tsv
     │   │
-    │   └── summary         -> Generated Summary using Lex Rank
+    │   └── summary           -> Generated Summary using Lex Rank
     │        └── LexRankSummary.p
     │
-    ├── Data_Preprocessing  -> Scripts to Preprocessing raw data for modeling
+    ├── Data_Preprocessing    -> Scripts to Preprocessing raw data for modeling
     │   └── DataProcessing.py
     │
-    ├── Recommendation     -> Scripts to generate the model and predicted json arrays
+    ├── Recommendation        -> Scripts to generate the model and predicted json arrays
     │   ├── matrix_factorization_recommender.py
     │   ├── surprise_recommender.py
     │   ├── Router.py
     │   └── Recommender_Trainer.py
     │
-    ├── static     -> Template Assets,CSS and JS
+    ├── static                -> Template Assets,CSS and JS
     │   ├── assets
     │   │   └── favicon.ico
     │   ├── css
@@ -71,7 +72,7 @@ Project Organization :-
     │   └── js
     │       └── scripts.js
     │
-    ├── storage     -> contains Generated model 
+    ├── storage               -> contains Generated model 
     │   ├── storage_surprise
     │   │   ├── model_pickle_sub.joblib
     │   │   ├── model_pickle_aricles.joblib
@@ -84,14 +85,14 @@ Project Organization :-
     │       ├── model_status_sub.json
     │       └── model_status_articles.json
     │
-    ├── templates          -> contains .html files
+    ├── templates             -> contains .html files
     │   ├── home.html
     │   └── index.html
     │
-    ├── main.py            -> contains Main run file
+    ├── main.py               -> contains Main run file
     │
-    ├── requirements.txt   -> contains Requirement libraries to run this project
+    ├── requirements.txt      -> contains Requirement libraries to run this project
     │
-    └── run.sh             -> uvicorn redirecting script
+    └── run.sh                -> uvicorn redirecting script
 
 --------
