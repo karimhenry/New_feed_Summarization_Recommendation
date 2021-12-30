@@ -62,8 +62,8 @@ def home(request: Request, user_id="New User", n=9):
 
         # Loading Summary Dataset
         path = os.path.join(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'Data'), 'summary')
-        summary_df = pd.read_pickle(path + '/LexRankSummary.p')
-        summary_df = summary_df[['News ID', 'Cleaned_Article', 'Summary (TextRank)', 'Summary (LexRank)']]
+        summary_df = pd.read_pickle(path + '/Summary.p')
+        summary_df = summary_df[['News ID', 'Cleaned_Article', 'Summary (TextRank)', 'Summary (LexRank)', 'Summary (BART)']]
 
         # Merging News With Summary Dataset
         news_df = news_df.merge(summary_df, how='left', left_on='News ID', right_on='News ID').fillna("")
@@ -75,13 +75,13 @@ def home(request: Request, user_id="New User", n=9):
             titles.append(str(news_df.iloc[i]['Title']))
             urls.append(str(news_df.iloc[i]['URL']))
 
-            # (Summary of TextRank) Then (Abstract Summary from dataset) Then (Article) Then (Empty String)
-            if news_df.iloc[i]['Summary (TextRank)'] != "":
-                summaries.append(str(news_df.iloc[i]['Summary (TextRank)']).capitalize())
+            # (Abstractive and Extractive Summaries) Then (Dataset Summary) Then (Cleaned Article) Then (Empty String)
+            if news_df.iloc[i]['Summary (BART)'] != "" or news_df.iloc[i]['Summary (TextRank)'] != "":
+                summaries.append("<b><u>Abstractive Summary:-</u></b> " + str(news_df.iloc[i]['Summary (BART)']).capitalize() + "<br>" + "<b><u>Extractive Summary:-</u></b> " + str(news_df.iloc[i]['Summary (TextRank)']).capitalize())
             elif news_df.iloc[i]['Abstract'] != "":
-                summaries.append("Abstract Summary :- " + str(news_df.iloc[i]['Abstract']).capitalize())
+                summaries.append("<b><u>Dataset Summary:-</u></b> " + str(news_df.iloc[i]['Abstract']).capitalize())
             elif news_df.iloc[i]['Cleaned_Article'] != "":
-                summaries.append("Article :- " + str(news_df.iloc[i]['Cleaned_Article']).capitalize())
+                summaries.append("<b><u>Article:-</u></b> " + str(news_df.iloc[i]['Cleaned_Article']).capitalize())
             else:
                 summaries.append("")
 
@@ -108,8 +108,8 @@ def category(request: Request, category, n=9):
 
         # Loading Summary Dataset
         path = os.path.join(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'Data'), 'summary')
-        summary_df = pd.read_pickle(path + '/LexRankSummary.p')
-        summary_df = summary_df[['News ID', 'Cleaned_Article', 'Summary (TextRank)', 'Summary (LexRank)']]
+        summary_df = pd.read_pickle(path + '/Summary.p')
+        summary_df = summary_df[['News ID', 'Cleaned_Article', 'Summary (TextRank)', 'Summary (LexRank)', 'Summary (BART)']]
 
         # Merging News With Summary Dataset
         news_df = news_df.merge(summary_df, how='left', left_on='News ID', right_on='News ID').fillna("")
@@ -124,13 +124,13 @@ def category(request: Request, category, n=9):
             titles.append(str(news_df.iloc[i]['Title']))
             urls.append(str(news_df.iloc[i]['URL']))
 
-            # (Summary of TextRank) Then (Abstract Summary from dataset) Then (Article) Then (Empty String)
-            if news_df.iloc[i]['Summary (TextRank)'] != "":
-                summaries.append(str(news_df.iloc[i]['Summary (TextRank)']).capitalize())
+            # (Abstractive and Extractive Summaries) Then (Dataset Summary) Then (Cleaned Article) Then (Empty String)
+            if news_df.iloc[i]['Summary (BART)'] != "" or news_df.iloc[i]['Summary (TextRank)'] != "":
+                summaries.append("<b><u>Abstractive Summary:-</u></b> " + str(news_df.iloc[i]['Summary (BART)']).capitalize() + "<br>" + "<b><u>Extractive Summary:-</u></b> " + str(news_df.iloc[i]['Summary (TextRank)']).capitalize())
             elif news_df.iloc[i]['Abstract'] != "":
-                summaries.append("Abstract Summary :- " + str(news_df.iloc[i]['Abstract']).capitalize())
+                summaries.append("<b><u>Dataset Summary:-</u></b> " + str(news_df.iloc[i]['Abstract']).capitalize())
             elif news_df.iloc[i]['Cleaned_Article'] != "":
-                summaries.append("Article :- " + str(news_df.iloc[i]['Cleaned_Article']).capitalize())
+                summaries.append("<b><u>Article:-</u></b> " + str(news_df.iloc[i]['Cleaned_Article']).capitalize())
             else:
                 summaries.append("")
 
@@ -156,8 +156,8 @@ def recommend(request: Request, user_id, n=9):
 
         # Loading Summary Dataset
         path = os.path.join(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'Data'), 'summary')
-        summary_df = pd.read_pickle(path + '/LexRankSummary.p')
-        summary_df = summary_df[['News ID', 'Cleaned_Article', 'Summary (TextRank)', 'Summary (LexRank)']]
+        summary_df = pd.read_pickle(path + '/Summary.p')
+        summary_df = summary_df[['News ID', 'Cleaned_Article', 'Summary (TextRank)', 'Summary (LexRank)', 'Summary (BART)']]
 
         # Merging News With Summary Dataset
         news_df = news_df.merge(summary_df, how='left', left_on='News ID', right_on='News ID').fillna("")
@@ -165,53 +165,53 @@ def recommend(request: Request, user_id, n=9):
         news_df = news_df.sort_values(by=['rating'], ascending=False)
 
         # Load Users' Predictions
-        predictions = trainer.get_top_n(user_id, int(n))
+        Top_predictions = trainer.get_top_n(user_id, int(n))
 
-        if not predictions:
+        if not Top_predictions:
             # Use Cold Start Option
             user_id += " (New User)"
-            top_news = news_df["News ID"][:n]
+            # top_news = news_df["News ID"][:n]
 
-            for article in top_news:
-                categories.append(str(news_df[news_df['News ID'] == article].iloc[0]['Category']).capitalize())
-                titles.append(str(news_df[news_df['News ID'] == article].iloc[0]['Title']))
-                urls.append(str(news_df[news_df['News ID'] == article].iloc[0]['URL']))
+            for i in range(n):
+                predictions.append(str(news_df.iloc[i]['News ID']))
+                categories.append(str(news_df.iloc[i]['Category']).capitalize())
+                titles.append(str(news_df.iloc[i]['Title']))
+                urls.append(str(news_df.iloc[i]['URL']))
 
-                # (Summary of TextRank) Then (Abstract Summary from dataset) Then (Article) Then (Empty String)
-                if news_df[news_df['News ID'] == article].iloc[0]['Summary (TextRank)'] != "":
-                    summaries.append(str(news_df[news_df['News ID'] == article].iloc[0]['Summary (TextRank)']).capitalize())
-                elif news_df[news_df['News ID'] == article].iloc[0]['Abstract'] != "":
-                    summaries.append("Abstract Summary :- " + str(news_df[news_df['News ID'] == article].iloc[0]['Abstract']).capitalize())
-                elif news_df[news_df['News ID'] == article].iloc[0]['Cleaned_Article'] != "":
-                    summaries.append("Article :- " + str(
-                        news_df[news_df['News ID'] == article].iloc[0]['Cleaned_Article']).capitalize())
+                # (Abstractive and Extractive Summaries) Then (Dataset Summary) Then (Cleaned Article) Then (Empty String)
+                if news_df.iloc[i]['Summary (BART)'] != "" or news_df.iloc[i]['Summary (TextRank)'] != "":
+                    summaries.append("<b><u>Abstractive Summary:-</u></b> " + str(news_df.iloc[i]['Summary (BART)']).capitalize() + "<br>" + "<b><u>Extractive Summary:-</u></b> " + str(news_df.iloc[i]['Summary (TextRank)']).capitalize())
+                elif news_df.iloc[i]['Abstract'] != "":
+                    summaries.append("<b><u>Dataset Summary:-</u></b> " + str(news_df.iloc[i]['Abstract']).capitalize())
+                elif news_df.iloc[i]['Cleaned_Article'] != "":
+                    summaries.append("<b><u>Article:-</u></b> " + str(news_df.iloc[i]['Cleaned_Article']).capitalize())
                 else:
                     summaries.append("")
 
             return temps.TemplateResponse("home.html",
                                           {"request": request, "user_id": user_id,
-                                           "predictions": top_news, "categories": categories,
+                                           "predictions": predictions, "categories": categories,
                                            "titles": titles, "summaries": summaries, "urls": urls, "history": history,
                                            "history_urls": history_urls})
         else:
             # if loaded recommendation less than the required printing spaces
-            if len(predictions['Articles']) < (n+1):
-                extension = (n+1) - len(predictions['Articles'])
+            if len(Top_predictions['Articles']) < (n+1):
+                extension = (n+1) - len(Top_predictions['Articles'])
                 top = news_df['News ID'][:extension].tolist()
-                predictions['Articles'].extend(top)
+                Top_predictions['Articles'].extend(top)
 
-            for article in predictions['Articles']:
+            for article in Top_predictions['Articles']:
                 categories.append(str(news_df[news_df['News ID'] == article].iloc[0]['Category']).capitalize())
                 titles.append(str(news_df[news_df['News ID'] == article].iloc[0]['Title']))
                 urls.append(str(news_df[news_df['News ID'] == article].iloc[0]['URL']))
 
                 # (Summary of TextRank) Then (Abstract Summary from dataset) Then (Article) Then (Empty String)
-                if news_df[news_df['News ID'] == article].iloc[0]['Summary (TextRank)'] != "":
-                    summaries.append(str(news_df[news_df['News ID'] == article].iloc[0]['Summary (TextRank)']).capitalize())
+                if news_df[news_df['News ID'] == article].iloc[0]['Summary (BART)'] != "" or news_df[news_df['News ID'] == article].iloc[0]['Summary (TextRank)'] != "":
+                    summaries.append("<b><u>Abstractive Summary:-</u></b> " + str(news_df[news_df['News ID'] == article].iloc[0]['Summary (BART)']).capitalize() + "<br>" + "<b><u>Extractive Summary:-</u></b> " + str(news_df[news_df['News ID'] == article].iloc[0]['Summary (TextRank)']).capitalize())
                 elif news_df[news_df['News ID'] == article].iloc[0]['Abstract'] != "":
-                    summaries.append("Abstract Summary :- " + str(news_df[news_df['News ID'] == article].iloc[0]['Abstract']).capitalize())
+                    summaries.append("<b><u>Abstract Summary:-</u></b> " + str(news_df[news_df['News ID'] == article].iloc[0]['Abstract']).capitalize())
                 elif news_df[news_df['News ID'] == article].iloc[0]['Cleaned_Article'] != "":
-                    summaries.append("Article :- " + str(news_df[news_df['News ID'] == article].iloc[0]['Cleaned_Article']).capitalize())
+                    summaries.append("<b><u>Article:-</u></b> " + str(news_df[news_df['News ID'] == article].iloc[0]['Cleaned_Article']).capitalize())
                 else:
                     summaries.append("")
 
@@ -227,7 +227,7 @@ def recommend(request: Request, user_id, n=9):
 
             return temps.TemplateResponse("home.html",
                                           {"request": request, "user_id": user_id, "history_urls": history_urls,
-                                           "predictions": predictions['Articles'], "categories": categories,
+                                           "predictions": Top_predictions['Articles'], "categories": categories,
                                            "titles": titles, "summaries": summaries, "urls": urls, "history": history})
 
     except Exception as e:

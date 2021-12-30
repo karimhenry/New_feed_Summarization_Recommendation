@@ -43,4 +43,4 @@ model = BartForConditionalGeneration.from_pretrained("facebook/bart-large-cnn")
 newsDF['Summary (BART)'] = newsDF["Cleaned_Article"].apply(lambda x: Summarizer.abstractive(x, tokenizer, model))
 
 # Saving the summaries results
-newsDF.to_pickle(os.path.join(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'Data'), 'summary'), 'LexRankSummary.p')
+newsDF.to_pickle(os.path.join(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'Data'), 'summary'), 'Summary.p')
