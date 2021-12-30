@@ -24,8 +24,8 @@
 - Only training and validation sets are contained in the MIND-small dataset.
 
 ## Technologies Used :-
-- **Recommendations :-** Matrix Factorization and Surprise Libraries.
-- **Summarization :-** Extractive and Abstractive Summarization.
+- **Summarization Techniques:-** Extractive and Abstractive Summarization.
+- **Recommendation Techniques:-** Matrix Factorization and Surprise Libraries.
 
 ## Instructions :-
 1) Install "requirement.txt" Packages :- 
