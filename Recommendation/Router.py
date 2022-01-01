@@ -7,7 +7,6 @@ from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from Data_Preprocessing.DataProcessing import DataPreprocess
 from Recommendation.surprise_recommender import SurpriseTrainer
-from Recommendation.matrix_factorization_recommender import matrix_factorization
 
 import os
 import random
@@ -17,7 +16,6 @@ import pandas as pd
 preprocessing = DataPreprocess()
 
 # Recommender Models
-trainer = matrix_factorization(0)
 trainer = SurpriseTrainer(0)
 
 # Web API
